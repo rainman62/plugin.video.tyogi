@@ -5,6 +5,8 @@ import xbmcgui
 import xbmcplugin
 import xbmc
 
+import resolveurl
+
 import requests
 import re
 
@@ -43,7 +45,7 @@ def webBuildPageURL(category,pageNumber):
 current_category = args.get('current_category',None)
 current_level = args.get('level', 'MainMenu')
 current_page = args.get('page', None)
-current_movie = args.get('movie', None)
+current_movie = args.get('movieURL', None)
 
 if current_level == 'MainMenu':
     for category in CATEGORIES.keys():
@@ -68,6 +70,17 @@ elif current_level[0] == 'Folder':
     xbmcplugin.endOfDirectory(addon_handle)
 elif current_level[0] == 'Movie':
     xbmc.log("------------------ Inside Movie -------------", level=xbmc.LOGNOTICE)
+    my_current_movieURL = current_movie[0]
+    xbmc.log("Current Movie URL: " + my_current_movieURL, level=xbmc.LOGNOTICE)
+    inputHTML = requests.get(my_current_movieURL).text
+    xbmc.log(inputHTML, level=xbmc.LOGNOTICE)
+    videoList = resolveurl.scrape_supported(inputHTML, regex= '''=\s*['"]([^'"]+)''' )
+    xbmc.log(str(videoList), level=xbmc.LOGNOTICE)
+
+    for video in videoList:
+        playableURL = resolveurl.resolve(video)
+        li = xbmcgui.ListItem(video)
+        xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
     xbmcplugin.endOfDirectory(addon_handle)
 
 # TODO : Render Main Menu from categories
