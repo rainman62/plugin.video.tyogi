@@ -6,26 +6,37 @@ import xbmcplugin
 import xbmc
 
 import resolveurl
-
 import requests
 import re
 
-def getMoviesFromPage(url):
-    inputHTML = requests.get(url).text
-    inputList = inputHTML.split('</li>')
-    pattern = '<li.*href="(.*)".*title="(.*)".*src="(.*.jpg)".*'
-    returnValue = []
-    for input in inputList:
-        result = re.search(pattern, input, re.IGNORECASE | re.DOTALL)
-        if result is not None:
-            returnValue.append({'link': result.group(1), 'title': result.group(2), 'image': result.group(3)})
+from HTMLParser import HTMLParser
+
+
+def getMoviesFromPage(url,queryparameter=None):
+    inputHTML = requests.get(url=url,params=queryparameter).text
+    inputHTML = inputHTML[inputHTML.find('id="content"'):]
+    returnValue = {}
+
+    class MyHTMLParser(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            if tag == 'a' and len(attrs)>1 and attrs[0][0]== 'href' and attrs[1][0]=='title':
+                print "Encountered a start tag:", tag, " attribute :", attrs
+                if returnValue.get(attrs[1][1]) is None:
+                    returnValue[attrs[1][1]] = {'link':'','image':''}
+                returnValue[attrs[1][1]]['link'] = attrs[0][1]
+            elif tag == 'img' and len(attrs)>1 and attrs[0][0]== 'src' and attrs[1][0]=='alt':
+                print "Encountered a start tag:", tag, " attribute :", attrs
+                returnValue[attrs[1][1]]['image'] = attrs[0][1]
+    parser = MyHTMLParser()
+    parser.feed(inputHTML)
     return returnValue
 
 SERVER_BASE_URL = "http://tamilyogi.cc/"
 CATEGORIES = {'home': "home/",
             'new':"category/tamilyogi-full-movie-online/",
             'brrip':"category/tamilyogi-bluray-movies/",
-            'dvd':"category/tamilyogi-dvdrip-movies/"}
+            'dvd':"category/tamilyogi-dvdrip-movies/",
+            'search':''}
 
 base_url = sys.argv[0]
 addon_handle = int(sys.argv[1])
@@ -46,6 +57,7 @@ current_category = args.get('current_category',None)
 current_level = args.get('level', 'MainMenu')
 current_page = args.get('page', None)
 current_movie = args.get('movieURL', None)
+search_query = args.get('query', None)
 
 if current_level == 'MainMenu':
     for category in CATEGORIES.keys():
@@ -54,28 +66,30 @@ if current_level == 'MainMenu':
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
     xbmcplugin.endOfDirectory(addon_handle)
 elif current_level[0] == 'Folder':
+    query = None
+    if current_category[0] == 'search':
+        if search_query is None:
+            query = xbmcgui.Dialog().input("Enter your search..")
+        else:
+            query = search_query[0]
     my_current_page = '1' if current_page is None else current_page[0]
     webPageURL = webBuildPageURL(current_category[0], my_current_page)
-    movieList = getMoviesFromPage(webPageURL)
+    movieList = getMoviesFromPage(webPageURL , None if query is None else {'s' : query})
 
     for movieItem in movieList:
-        url = build_url({'level': 'Movie', 'movieURL': movieItem.get('link')})
-        li = xbmcgui.ListItem(movieItem.get('title'))
+        url = build_url({'level': 'Movie', 'movieURL': movieList[movieItem]['link']})
+        li = xbmcgui.ListItem(label = movieItem, thumbnailImage = movieList[movieItem]['image'])
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
 
-    url = build_url({'current_category': current_category[0], 'level': 'Folder', 'page': str(int(my_current_page)+1)})
+    url = build_url({'current_category': current_category[0], 'level': 'Folder', 'page': str(int(my_current_page)+1),'query': query})
     li = xbmcgui.ListItem('Next..')
     xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li, isFolder=True)
 
     xbmcplugin.endOfDirectory(addon_handle)
 elif current_level[0] == 'Movie':
-    xbmc.log("------------------ Inside Movie -------------", level=xbmc.LOGNOTICE)
     my_current_movieURL = current_movie[0]
-    xbmc.log("Current Movie URL: " + my_current_movieURL, level=xbmc.LOGNOTICE)
     inputHTML = requests.get(my_current_movieURL).text
-    xbmc.log(inputHTML, level=xbmc.LOGNOTICE)
     videoList = resolveurl.scrape_supported(inputHTML, regex= '''=\s*['"]([^'"]+)''' )
-    xbmc.log(str(videoList), level=xbmc.LOGNOTICE)
 
     for video in videoList:
         playableURL = resolveurl.resolve(video)
