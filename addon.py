@@ -91,10 +91,21 @@ elif current_level[0] == 'Movie':
     inputHTML = requests.get(my_current_movieURL).text
     videoList = resolveurl.scrape_supported(inputHTML, regex= '''=\s*['"]([^'"]+)''' )
 
+    inputHTML2 = requests.request('GET', my_current_movieURL, headers={'User-Agent':'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36'}).text
+    videoList2 = resolveurl.scrape_supported(inputHTML2, regex= '''=\s*['"]([^'"]+)''' )
+
     for video in videoList:
-        playableURL = resolveurl.resolve(video)
-        li = xbmcgui.ListItem(video)
-        xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
+        playableURL = str(resolveurl.resolve(video))
+        if playableURL != 'False':
+            li = xbmcgui.ListItem(video)
+            xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
+
+    for video in videoList2:
+        playableURL = str(resolveurl.resolve(video))
+        if playableURL != 'False':
+            li = xbmcgui.ListItem(video)
+            xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
+
     xbmcplugin.endOfDirectory(addon_handle)
 
 # TODO : Render Main Menu from categories
