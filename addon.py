@@ -30,7 +30,7 @@ def setCount(x):
 
 def getMoviesFromPage(url, queryparameter=None):
     inputHTML = requests.get(url=url, params=queryparameter).text
-    inputHTML = inputHTML[inputHTML.find('id="content"'):]
+    inputHTML = inputHTML[inputHTML.find('id=content'):]
     returnValue = {}
     returnValueArray = []
     setCount(0)
@@ -120,17 +120,17 @@ elif current_level[0] == 'Folder':
 elif current_level[0] == 'Movie':
     my_current_movieURL = current_movie[0]
     inputHTML = requests.get(my_current_movieURL).text
-    videoList = resolveurl.scrape_supported(inputHTML, regex='''=\s*['"]([^'"]+)''')
+    # videoList = resolveurl.scrape_supported(inputHTML, regex='''SRC\s*=\s*['"]([^'"]+)''')
 
     inputHTML2 = requests.request('GET', my_current_movieURL, headers={
         'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36'}).text
-    videoList2 = resolveurl.scrape_supported(inputHTML2, regex='''=\s*['"]([^'"]+)''')
+    videoList2 = resolveurl.scrape_supported(inputHTML2, regex='''SRC\s*=\s*['"]([^'"]+)''')
 
-    for video in videoList:
-        playableURL = str(resolveurl.resolve(video))
-        if playableURL != 'False':
-            li = xbmcgui.ListItem(video)
-            xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
+    # for video in videoList:
+    #     playableURL = str(resolveurl.resolve(video))
+    #     if playableURL != 'False':
+    #         li = xbmcgui.ListItem(video)
+    #         xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
 
     for video in videoList2:
         playableURL = str(resolveurl.resolve(video))
