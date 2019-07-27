@@ -54,7 +54,7 @@ def getMoviesFromPage(url, queryparameter=None):
     return returnValueArray
 
 
-SERVER_BASE_URL = "http://tamilyogi.cc/"
+SERVER_BASE_URL = "http://tamilyogi.fm/"
 CATEGORIES = {'home': "home/",
               'new': "category/tamilyogi-full-movie-online/",
               'brrip': "category/tamilyogi-bluray-movies/",
