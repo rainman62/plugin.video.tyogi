@@ -30,7 +30,7 @@ def setCount(x):
 
 def getMoviesFromPage(url, queryparameter=None):
     inputHTML = requests.get(url=url, params=queryparameter).text
-    inputHTML = inputHTML[inputHTML.find('id="content"'):]
+    inputHTML = inputHTML[inputHTML.find('id=content'):]
     returnValue = {}
     returnValueArray = []
     setCount(0)
@@ -54,7 +54,7 @@ def getMoviesFromPage(url, queryparameter=None):
     return returnValueArray
 
 
-SERVER_BASE_URL = "http://tamilyogi.fm/"
+SERVER_BASE_URL = "http://tamilyogi.vip/"
 CATEGORIES = {'home': "home/",
               'new': "category/tamilyogi-full-movie-online/",
               'brrip': "category/tamilyogi-bluray-movies/",
@@ -139,7 +139,3 @@ elif current_level[0] == 'Movie':
             xbmcplugin.addDirectoryItem(handle=addon_handle, url=playableURL, listitem=li)
 
     xbmcplugin.endOfDirectory(addon_handle)
-
-# TODO : Render Main Menu from categories
-
-# TODO : Render List of movies from current categoryd

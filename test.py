@@ -5,7 +5,7 @@
 #     data=myfile.read()
 #
 # inputHTML = str(data)
-# inputHTML = inputHTML[inputHTML.find('id="content"'):]
+# inputHTML = inputHTML[inputHTML.find('id=content'):]
 # returnValue = {}
 # # returnValue.append({'link': link, 'title': title, 'image': image})
 #
