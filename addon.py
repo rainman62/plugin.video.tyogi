@@ -30,7 +30,7 @@ def setCount(x):
 
 def getMoviesFromPage(url, queryparameter=None):
     inputHTML = requests.get(url=url, params=queryparameter).text
-    inputHTML = inputHTML[inputHTML.find('id=content'):]
+    inputHTML = inputHTML[inputHTML.find('id="content"'):]
     returnValue = {}
     returnValueArray = []
     setCount(0)
